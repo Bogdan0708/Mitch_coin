@@ -250,3 +250,123 @@ The UI uses a custom gothic dark theme matching Mitch from Transylvania's brand:
 - Check correct network in MetaMask (Polygon Amoy = chainId 80002)
 - Verify sufficient balance for gas + transfer amount
 - Check transaction on Polygonscan for specific error
+
+---
+
+## Session History & Learnings
+
+### Session 1: Initial Project Setup (February 11, 2025)
+
+**What Was Built:**
+- Complete ERC-20 token smart contract with owner-controlled mint/burn
+- Hardhat development environment with Polygon Amoy and Sepolia support
+- Next.js 14 web application with wagmi v2 + RainbowKit integration
+- Gothic-themed UI matching Mitch from Transylvania brand
+- Comprehensive documentation suite (7 files)
+- Full test suite (4/4 passing)
+- Deployment and verification scripts
+- Airdrop functionality with CSV import
+
+**Key Decisions Made:**
+
+1. **Technology Stack:**
+   - wagmi v2 + viem (NOT ethers.js on frontend) for better TypeScript support
+   - Next.js 14 App Router for modern React patterns
+   - pnpm workspaces for monorepo structure
+   - Polygon Amoy as primary testnet (lower fees)
+
+2. **Architecture:**
+   - Two-layer monorepo (contracts at root, web in subdirectory)
+   - Manual ABI sync between layers (copy from artifacts to web/app/abi.json)
+   - Tabbed UI with conditional rendering (no global state needed)
+   - Centralized environment variable management (web/lib/config.ts)
+
+3. **Security:**
+   - Environment variables for all secrets
+   - .gitignore protection for .env files
+   - Example files with clear placeholders
+   - Owner-only access control for mint/burn
+
+**Patterns Established:**
+
+1. **Contract Interaction Pattern:**
+   ```typescript
+   // Reading data
+   const { data } = useReadContract({
+     address: TOKEN_ADDRESS,
+     abi,
+     functionName: "balanceOf",
+     args: [address]
+   });
+
+   // Writing transactions
+   const { writeContract, isPending } = useWriteContract();
+   const { isSuccess } = useWaitForTransactionReceipt({ hash });
+
+   writeContract({
+     address: TOKEN_ADDRESS,
+     abi,
+     functionName: "transfer",
+     args: [recipient, parseUnits(amount, 18)]
+   });
+   ```
+
+2. **Environment Variable Access:**
+   - All web env vars go through `web/lib/config.ts`
+   - Type-safe exports with validation
+   - Clear error messages for missing values
+
+3. **Component Structure:**
+   - Separate components for features (MintUI, TransferUI)
+   - Transaction flow: input → pending → success → reset
+   - Auto-refresh data after successful transactions
+
+**Lessons Learned:**
+
+1. **ABI Synchronization:**
+   - Manual copy from `artifacts/` to `web/app/abi.json` is error-prone
+   - Must remember to update after every contract change
+   - Consider automating with Hardhat task in future
+
+2. **wagmi v2 Best Practices:**
+   - Always handle `isPending` state in UI
+   - Use `useWaitForTransactionReceipt` for confirmation
+   - `parseUnits`/`formatUnits` for all decimal conversions
+   - Wrap wagmi hooks in "use client" components
+
+3. **Deployment Gotchas:**
+   - Testnet faucets can be slow or rate-limited
+   - Alchemy API keys must match in both .env files
+   - Always run `pnpm check` before deploying
+   - Contract verification requires separate API key
+
+4. **Documentation Value:**
+   - Multiple docs for different audiences (quick start vs detailed)
+   - Example files are more valuable than explanations
+   - Step-by-step checklists prevent forgotten steps
+   - Clear next steps reduce user friction
+
+**Known Issues:**
+
+1. No automated ABI sync mechanism
+2. Transaction history not shown in UI (must use Polygonscan)
+3. Generic error messages from wagmi (could be improved)
+4. No mainnet configuration (testnet only)
+
+**Future Enhancement Ideas:**
+
+- Automated ABI sync via Hardhat task
+- Transaction history table with event indexing
+- Token analytics dashboard
+- Staking/rewards mechanism
+- Governance features
+- Mobile app with React Native
+
+**Session Output:**
+- 30+ files created
+- 4/4 tests passing
+- Full documentation suite
+- Production-ready codebase
+- Git repository initialized and pushed to GitHub
+
+For detailed session information, see `SESSION_SUMMARY.md`.
